@@ -87,38 +87,70 @@ func initializePossibilities(board sudokuBoard) [9][9][9]int {
 
 func pruneByRow(toPrune[9][9][9] int, board sudokuBoard, row int, col int) [9][9][9]int {
   prune := toPrune
-  if board.board[row][col] == 0{//ignoring spots with numbers
-  for poss := 0; poss < 9; poss++{//run through possibilities at target spot
-    for index := 0; index < 9; index++{//col here, moving across the board
-      if board.board[row][index] > 0 &&
-        board.board[row][index] == prune[row][col][poss]{
-        prune[row][col][poss] = 0
-      }
+  //make list of items in row
+  var list[9] int
+  for index := 0; index < 9; index++{
+    if board.board[row][index] != 0{
+      list[board.board[row][index]-1] = board.board[row][index]
     }
   }
+
+  //if item exists both in col and in target's poss array, remove it from poss array (set 0)
+  for comp := 0; comp < 9; comp++{
+    if(list[comp] == prune[row][col][comp]){
+      prune[row][col][comp] = 0
+    }
+  }
+
   return prune
 }
 
 func pruneByCol(toPrune[9][9][9] int, board sudokuBoard, row int, col int) [9][9][9]int {
   prune := toPrune
-  for poss := 0; poss < 9; poss++{
-    for index := 0; index < 9; index++{ //row instead of col, moving down board
-      if board.board[index][col] > 0 &&
-        board.board[index][col] == prune[row][col][poss]{
-        prune[row][col][poss] = 0
+  //make list of items in col
+  var list[9] int
+  for index := 0; index < 9; index++{
+    if board.board[index][col] != 0{
+      list[board.board[index][col]-1] = board.board[index][col]
+    }
+  }
+
+  //if item exists both in col and in target's poss array, remove it from poss array (set 0)
+  for comp := 0; comp < 9; comp++{
+    if(list[comp] == prune[row][col][comp]){
+      prune[row][col][comp] = 0
+    }
+  }
+
+  return prune
+}
+
+func pruneByBox(toPrune[9][9][9] int, board sudokuBoard, row int, col int) [9][9][9]int {
+  prune := toPrune
+  //what box are we in?
+  rowSet := row/3
+  colSet := col/3
+  //box := ((rowSet+1)*3) + (colSet+1)
+
+  //make list of items in box
+  var list[9] int
+  for row := 0; row < 3; row++{
+    for col := 0; col < 3; col++{
+      if board.board[row+(rowSet*3)][col+(colSet*3)] != 0{
+        list[board.board[row+(rowSet*3)][col+(colSet*3)]-1] = board.board[row+(rowSet*3)][col+(colSet*3)]
       }
+    }
+  }
+  //if item exists in box and in target's poss array, remove it from poss array (set 0)
+  for comp := 0; comp < 9; comp++{
+    if list[comp] == prune[row][col][comp]{
+      prune[row][col][comp] = 0
     }
   }
   return prune
 }
 
-func pruneByBox(toPrune[9][9][9] int, board sudokuBoard) [9][9][9]int {
-  prune := toPrune
-  //pruning happens here
-  return prune
-}
-
-func prunePossibilities(poss[9][9][9] int, board sudokuBoard) [9][9][9]int {
+func basicPrunePossibilities(poss[9][9][9] int, board sudokuBoard) [9][9][9]int {
   var pruned[9][9][9] int
   for row := 0; row < 9; row++{
     for col := 0; col < 9; col++{
