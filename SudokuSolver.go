@@ -66,6 +66,70 @@ func newBoard(board[9][9] int) sudokuBoard {
   return newBoard
 }
 
+func initializePossibilities(board sudokuBoard) [9][9][9]int {
+  var poss[9][9][9] int
+  for row := 0; row < 9; row++{
+    for col := 0; col < 9; col++{
+      for p := 0; p < 9; p++{
+        poss[row][col][p] = p
+      }
+    }
+  }
+  return poss
+}
+
+func pruneByRow(toPrune[9][9][9] int, board sudokuBoard) [9][9][9]int {
+  prune := toPrune
+  for row := 0; row < 9; row++{//for each spot on the board
+    for col := 0; col < 9; col++{
+      if board.board[row][col] == 0{//ignoring spots with numbers
+        for poss := 0; poss < 9; poss++{//run through possibilities at target spot
+          for index := 0; index < 9; index++{//col here, moving across the board
+            if board.board[row][index] > 0 &&
+              board.board[row][index] == prune[row][col][poss]{
+              prune[row][col][poss] = 0
+            }
+          }
+        }
+      }
+    }
+  }
+  return prune
+}
+
+func pruneByCol(toPrune[9][9][9] int, board sudokuBoard) [9][9][9]int {
+  prune := toPrune
+  for row := 0; row < 9; row++{
+    for col := 0; col < 9; col++{
+      if board.board[row][col] == 0{
+        for poss := 0; poss < 9; poss++{
+          for index := 0; index < 9; index++{ //row instead of col, moving down board
+            if board.board[index][col] > 0 &&
+              board.board[index][col] == prune[row][col][poss]{
+              prune[row][col][poss] = 0
+            }
+          }
+        }
+      }
+    }
+  }
+  return prune
+}
+
+func pruneByBox(toPrune[9][9][9] int, board sudokuBoard) [9][9][9]int {
+  prune := toPrune
+  //ew pain in the ass
+  return prune
+}
+
+func prunePossibilities(poss[9][9][9] int, board sudokuBoard) [9][9][9]int {
+  var pruned[9][9][9] int
+  pruned = pruneByRow(pruned, board)
+  pruned = pruneByCol(pruned, board)
+  pruned = pruneByBox(pruned, board)
+  return pruned
+}
+
 func main(){
   boardToBe := [9][9]int {
     {2,9,6,3,1,8,5,7,4},
@@ -78,6 +142,7 @@ func main(){
     {8,5,9,7,6,4,1,3,2},
     {3,4,2,1,8,9,7,6,5}}
   board := newBoard(boardToBe)
+
   trueFalse := testBoard(board)
   fmt.Printf("%t",trueFalse)
 }
