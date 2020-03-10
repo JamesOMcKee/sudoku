@@ -1,2 +1,2 @@
 # SudokuSolver
-Solves Sudoku. Written in Golang
+Solves Sudoku (it will). Written in Golang
