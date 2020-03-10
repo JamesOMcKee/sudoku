@@ -66,50 +66,46 @@ func newBoard(board[9][9] int) sudokuBoard {
   return newBoard
 }
 
+//Essentially the following functions create a list of possibilities for each
+//spot on the board, 1-9. Pruning happens at each spot on the board which has
+//no value (value set to 0). Each value in the possibility array gets set to
+//0 if the number exists in the same row, or column, or box. A spot that can
+//have a 2, a 4, or a 5 after that would then have a poss array
+//of {0,2,0,4,5,0,0,0,0}
+
 func initializePossibilities(board sudokuBoard) [9][9][9]int {
   var poss[9][9][9] int
   for row := 0; row < 9; row++{
     for col := 0; col < 9; col++{
       for p := 0; p < 9; p++{
-        poss[row][col][p] = p
+        poss[row][col][p] = p+1
       }
     }
   }
   return poss
 }
 
-func pruneByRow(toPrune[9][9][9] int, board sudokuBoard) [9][9][9]int {
+func pruneByRow(toPrune[9][9][9] int, board sudokuBoard, row int, col int) [9][9][9]int {
   prune := toPrune
-  for row := 0; row < 9; row++{//for each spot on the board
-    for col := 0; col < 9; col++{
-      if board.board[row][col] == 0{//ignoring spots with numbers
-        for poss := 0; poss < 9; poss++{//run through possibilities at target spot
-          for index := 0; index < 9; index++{//col here, moving across the board
-            if board.board[row][index] > 0 &&
-              board.board[row][index] == prune[row][col][poss]{
-              prune[row][col][poss] = 0
-            }
-          }
-        }
+  if board.board[row][col] == 0{//ignoring spots with numbers
+  for poss := 0; poss < 9; poss++{//run through possibilities at target spot
+    for index := 0; index < 9; index++{//col here, moving across the board
+      if board.board[row][index] > 0 &&
+        board.board[row][index] == prune[row][col][poss]{
+        prune[row][col][poss] = 0
       }
     }
   }
   return prune
 }
 
-func pruneByCol(toPrune[9][9][9] int, board sudokuBoard) [9][9][9]int {
+func pruneByCol(toPrune[9][9][9] int, board sudokuBoard, row int, col int) [9][9][9]int {
   prune := toPrune
-  for row := 0; row < 9; row++{
-    for col := 0; col < 9; col++{
-      if board.board[row][col] == 0{
-        for poss := 0; poss < 9; poss++{
-          for index := 0; index < 9; index++{ //row instead of col, moving down board
-            if board.board[index][col] > 0 &&
-              board.board[index][col] == prune[row][col][poss]{
-              prune[row][col][poss] = 0
-            }
-          }
-        }
+  for poss := 0; poss < 9; poss++{
+    for index := 0; index < 9; index++{ //row instead of col, moving down board
+      if board.board[index][col] > 0 &&
+        board.board[index][col] == prune[row][col][poss]{
+        prune[row][col][poss] = 0
       }
     }
   }
@@ -118,15 +114,21 @@ func pruneByCol(toPrune[9][9][9] int, board sudokuBoard) [9][9][9]int {
 
 func pruneByBox(toPrune[9][9][9] int, board sudokuBoard) [9][9][9]int {
   prune := toPrune
-  //ew pain in the ass
+  //pruning happens here
   return prune
 }
 
 func prunePossibilities(poss[9][9][9] int, board sudokuBoard) [9][9][9]int {
   var pruned[9][9][9] int
-  pruned = pruneByRow(pruned, board)
-  pruned = pruneByCol(pruned, board)
-  pruned = pruneByBox(pruned, board)
+  for row := 0; row < 9; row++{
+    for col := 0; col < 9; col++{
+      if board.board[row][col] == 0{
+        pruned = pruneByRow(pruned, board, row, col)
+        pruned = pruneByCol(pruned, board, row, col)
+        pruned = pruneByBox(pruned, board, row, col)
+      }
+    }
+  }
   return pruned
 }
 
